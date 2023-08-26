@@ -13,4 +13,13 @@ class UserController extends Controller
         $users = User::latest()->get();
         return $users;
     }
+
+    public function store()
+    {
+        return User::create([
+            'name' => request('name'),
+            'email' => request('email'),
+            'password' => request('password'),
+        ]);
+    }
 }
