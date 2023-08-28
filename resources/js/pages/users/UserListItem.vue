@@ -12,7 +12,18 @@ defineProps({
 
 const emit = defineEmits(['userDeleted', 'editUser'])
 
-let userIdBeingDeleted = ref(null)
+const userIdBeingDeleted = ref(null)
+
+const roles = ref([
+    {
+        name: 'ADMIN',
+        value: 1
+    },
+    {
+        name: 'USER',
+        value: 2
+    },
+])
 
 const confirmUserDelete = (user) => {
     console.log(user.id)
@@ -30,6 +41,15 @@ const deleteUser = () => {
         })
 }
 
+const changeRole = (user, role) => {
+    axios.patch(`/api/users/${user.id}/change-role`, {
+        role: role
+    })
+        .then(() => {
+            toastr.success('Role changed successfully!');
+        });
+}
+
 </script>
 
 <template>
@@ -38,7 +58,17 @@ const deleteUser = () => {
         <td>{{ user.name }}</td>
         <td>{{ user.email }}</td>
         <td>{{ formatDate(user.created_at) }}</td>
-        <td>{{ user.role }}</td>
+        <td>
+            <select class="form-control" @change="changeRole(user, $event.target.value)">
+                <option
+                    v-for="role in roles"
+                    :value="role.value"
+                    :selected="(user.role === role.value)"
+                >
+                    {{ role.name }}
+                </option>
+            </select>
+        </td>
         <td>
             <a href="#" @click.prevent="$emit('editUser', user)"><i class="fa fa-edit"></i></a>
             <a href="#" @click.prevent="confirmUserDelete(user)"><i class="fa fa-trash text-danger ml-2"></i></a>

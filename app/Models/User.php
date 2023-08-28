@@ -55,4 +55,11 @@ class User extends Authenticatable
         return $this->created_at->format(config('app.date_format'));
     }
 
+//    public function role(): Attribute
+//    {
+//        return Attribute::make(
+//            get: fn ($value) => RoleType::from($value)->name,
+//        );
+//    }
+
 }
