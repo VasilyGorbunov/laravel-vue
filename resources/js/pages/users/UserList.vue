@@ -139,7 +139,7 @@ onMounted(() => {
                                 :user="user"
                                 :index="index"
                                 @user-deleted="userDeleted"
-                                @edit-user="editUser"
+                                @editUser="editUser"
                             />
                         </tbody>
                     </table>
