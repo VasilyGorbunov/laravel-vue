@@ -1,16 +1,18 @@
 <script setup>
 
-import {onMounted, ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 import {Form, Field} from "vee-validate";
 import * as yup from 'yup';
 import {useToastr} from "@/toastr.js";
 import UserListItem from "@/pages/users/UserListItem.vue";
+import { debounce } from 'lodash';
 
 const toastr = useToastr()
 const users = ref([])
 const editing = ref(false)
 const formValues = ref()
 const form = ref(null)
+const searchQuery = ref(null)
 
 const getUsers = () => {
     axios.get('/api/users')
@@ -91,6 +93,20 @@ const handleSubmit = (values, actions) => {
     }
 }
 
+const search = () => {
+    axios.get('/api/users/search', {
+        params: {
+            query: searchQuery.value
+        }
+    }).then(response => {
+        users.value = response.data
+    }).catch(error => {
+        console.log(error)
+    })
+}
+
+watch(searchQuery, debounce(search, 300))
+
 onMounted(() => {
     getUsers()
 })
@@ -116,9 +132,16 @@ onMounted(() => {
 
     <div class="content">
         <div class="container-fluid">
-            <button @click="addUser" type="button" class="mb-2 btn btn-primary">
-                Add New User
-            </button>
+
+            <div class="d-flex justify-content-between">
+                <button @click="addUser" type="button" class="mb-2 btn btn-primary">
+                    Add New User
+                </button>
+                <div>
+                    <input v-model="searchQuery" type="text" class="form-control" placeholder="Search...">
+                </div>
+            </div>
+
 
             <div class="card">
                 <div class="card-body">
@@ -133,7 +156,7 @@ onMounted(() => {
                             <th>Options</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody v-if="users.length > 0">
                             <UserListItem
                                 v-for="(user, index) in users" :key="user.id"
                                 :user="user"
@@ -141,6 +164,11 @@ onMounted(() => {
                                 @user-deleted="userDeleted"
                                 @editUser="editUser"
                             />
+                        </tbody>
+                        <tbody v-else>
+                            <tr>
+                                <td colspan="6" class="text-center">No result found....</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
