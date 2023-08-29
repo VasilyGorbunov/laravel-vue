@@ -5,17 +5,18 @@ import {Form, Field} from "vee-validate";
 import * as yup from 'yup';
 import {useToastr} from "@/toastr.js";
 import UserListItem from "@/pages/users/UserListItem.vue";
-import { debounce } from 'lodash';
+import {debounce} from 'lodash';
+import {Bootstrap4Pagination} from "laravel-vue-pagination";
 
 const toastr = useToastr()
-const users = ref([])
+const users = ref({'data': []})
 const editing = ref(false)
 const formValues = ref()
 const form = ref(null)
 const searchQuery = ref(null)
 
-const getUsers = () => {
-    axios.get('/api/users')
+const getUsers = (page = 1) => {
+    axios.get(`/api/users?page=${page}`)
         .then(response => {
             users.value = response.data
         })
@@ -67,7 +68,7 @@ const editUser = (user) => {
     }
 }
 
-const updateUser = (values, { setErrors }) => {
+const updateUser = (values, {setErrors}) => {
     axios.put('/api/users/' + formValues.value.id, values)
         .then(response => {
             const index = users.value.findIndex(user => user.id === response.data.id)
@@ -156,23 +157,24 @@ onMounted(() => {
                             <th>Options</th>
                         </tr>
                         </thead>
-                        <tbody v-if="users.length > 0">
-                            <UserListItem
-                                v-for="(user, index) in users" :key="user.id"
-                                :user="user"
-                                :index="index"
-                                @user-deleted="userDeleted"
-                                @editUser="editUser"
-                            />
+                        <tbody v-if="users.data.length > 0">
+                        <UserListItem
+                            v-for="(user, index) in users.data" :key="user.id"
+                            :user="user"
+                            :index="index"
+                            @user-deleted="userDeleted"
+                            @editUser="editUser"
+                        />
                         </tbody>
                         <tbody v-else>
-                            <tr>
-                                <td colspan="6" class="text-center">No result found....</td>
-                            </tr>
+                        <tr>
+                            <td colspan="6" class="text-center">No result found....</td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+            <Bootstrap4Pagination :data="users" @pagination-change-page="getUsers"/>
         </div>
     </div>
 
